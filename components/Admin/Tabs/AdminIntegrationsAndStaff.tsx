@@ -91,6 +91,42 @@ export const AdminIntegrations: React.FC<AdminIntegrationsProps> = ({ clinicalSe
                     )}
                 </div>
             </div>
+
+            {/* Mercado Pago */}
+            <div className="p-8 rounded-[35px] border border-slate-200 bg-white flex flex-col md:flex-row justify-between items-center gap-6">
+                <div className="flex-grow space-y-4">
+                    <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 bg-[#009EE3]/10 text-[#009EE3] rounded-2xl flex items-center justify-center flex-shrink-0 p-2">
+                            <img src="https://logodownload.org/wp-content/uploads/2019/06/mercado-pago-logo.png" alt="Mercado Pago" className="w-full h-full object-contain filter grayscale hover:grayscale-0 transition-all" />
+                        </div>
+                        <div>
+                            <h4 className="text-xl font-bold text-slate-900">Mercado Pago</h4>
+                            <p className="text-sm text-slate-500">Receba pagamentos com confirmação automática.</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Access Token (Produção)</label>
+                        <input
+                            type="text"
+                            placeholder="APP_USR-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                            value={clinicalSettings.integrations.mercadoPagoAccessToken || ''}
+                            onChange={(e) => onUpdateSettings({
+                                ...clinicalSettings,
+                                integrations: { ...clinicalSettings.integrations, mercadoPagoAccessToken: e.target.value, mercadoPagoConnected: !!e.target.value }
+                            })}
+                            className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none transition-all focus:border-[#009EE3] focus:ring-4 focus:ring-[#009EE3]/10"
+                        />
+                        <p className="text-[10px] text-slate-400 ml-1">Para obter: Mercado Pago Developers -&#62; Suas Integrações -&#62; Criar Aplicação.</p>
+                    </div>
+                </div>
+
+                <div className="flex flex-col gap-2 w-full md:w-auto">
+                    <span className={`px-6 py-3 rounded-full font-bold uppercase tracking-widest text-[10px] text-center ${clinicalSettings.integrations.mercadoPagoConnected ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
+                        {clinicalSettings.integrations.mercadoPagoConnected ? 'Ativo' : 'Inativo'}
+                    </span>
+                </div>
+            </div>
         </div>
     );
 };

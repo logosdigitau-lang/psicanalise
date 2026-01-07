@@ -220,7 +220,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
         createdAt: new Date().toISOString()
       };
 
-      const initPoint = await MercadoPagoService.createPreference(tempAppointment, selectedService!);
+      const initPoint = await MercadoPagoService.createPreference(tempAppointment, selectedService!, clinicalSettings.integrations.mercadoPagoAccessToken);
       setMpInitPoint(initPoint);
     } catch (e) {
       alert("Erro ao gerar link de pagamento.");
