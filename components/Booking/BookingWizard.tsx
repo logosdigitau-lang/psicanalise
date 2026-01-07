@@ -77,13 +77,12 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
           // Use help of listEvents which is proven to work in Admin
           const events = await GoogleCalendarService.listEvents(start, end, clinicalSettings.integrations.googleAccessToken);
 
-          // Filter out available/transparent events
-          // FAILSAFE: Ignore all-day events (start.date only) as they often block the whole day unintentionally.
-          // Only strictly time-based events (start.dateTime) should block specific slots here.
+          // Filter out cancelled events.
+          // IGNORE all-day events (start.date) to prevent blocking the whole day.
+          // ALLOW "Transparent" (Free) events if they have a specific time (dateTime).
           const busySlots: GoogleBusySlot[] = events
             .filter((ev: any) =>
               ev.status !== 'cancelled' &&
-              ev.transparency !== 'transparent' &&
               ev.start.dateTime // MUST have a specific time
             )
             .map((ev: any) => ({
@@ -91,6 +90,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
               end: ev.end.dateTime
             }));
 
+          setRawEvents(events); // DEBUG: Store raw events
           setGoogleBusySlots(busySlots);
         } catch (error) {
           console.error("Falha ao sincronizar agenda externa:", error);
@@ -350,9 +350,17 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold block">Horários para {selectedDate || '...'}</label>
-                    {isLoadingGoogle && <span className="text-[8px] text-slate-400 animate-pulse">Consultando agenda externa...</span>}
+                  <div className="flex flex-col mb-4 bg-yellow-100 p-2 rounded border border-yellow-300">
+                    <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold block">Debug Agenda Google ({selectedDate})</label>
+                    <div className="text-xs font-mono mt-1">
+                      Encontrados (RAW): {rawEvents.length} <br />
+                      Filtrados: {googleBusySlots.length}
+                    </div>
+                    {rawEvents.map((ev, i) => (
+                      <div key={i} className="text-[10px] text-blue-600 mt-1 border-b border-blue-200 pb-1">
+                        RAW #{i + 1}: {JSON.stringify(ev.start)} / Transp: {ev.transparency}
+                      </div>
+                    ))}
                   </div>
                   <div className="grid grid-cols-3 md:grid-cols-2 gap-2 md:gap-4 max-h-[300px] md:max-h-[440px] overflow-y-auto pr-2 custom-scrollbar">
                     {filteredAvailableSlots.map(time => (<button key={time} onClick={() => setSelectedTime(time)} className={`py-3 md:p-6 rounded-xl md:rounded-3xl border text-xs md:text-base font-bold transition-all ${selectedTime === time ? 'bg-slate-900 text-white border-slate-900' : 'bg-white border-slate-100 text-slate-700 active:bg-slate-50'}`}>{time}</button>))}
