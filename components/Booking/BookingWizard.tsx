@@ -71,12 +71,29 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
       if (selectedDate && clinicalSettings.integrations.googleCalendarConnected && clinicalSettings.integrations.googleAccessToken) {
         setIsLoadingGoogle(true);
         try {
-          const slots = await GoogleCalendarService.getBusySlots(selectedDate, clinicalSettings.integrations.googleAccessToken);
-          setGoogleBusySlots(slots);
+          const start = new Date(`${selectedDate}T00:00:00`);
+          const end = new Date(`${selectedDate}T23:59:59`);
+
+          // Use help of listEvents which is proven to work in Admin
+          const events = await GoogleCalendarService.listEvents(start, end, clinicalSettings.integrations.googleAccessToken);
+
+          // Filter out available/transparent events
+          // FAILSAFE: Ignore all-day events (start.date only) as they often block the whole day unintentionally.
+          // Only strictly time-based events (start.dateTime) should block specific slots here.
+          const busySlots: GoogleBusySlot[] = events
+            .filter((ev: any) =>
+              ev.status !== 'cancelled' &&
+              ev.transparency !== 'transparent' &&
+              ev.start.dateTime // MUST have a specific time
+            )
+            .map((ev: any) => ({
+              start: ev.start.dateTime,
+              end: ev.end.dateTime
+            }));
+
+          setGoogleBusySlots(busySlots);
         } catch (error) {
           console.error("Falha ao sincronizar agenda externa:", error);
-          // Optional: Notify user or just fail silently regarding visual feedback but log it
-          // alert("Aviso: Não foi possível sincronizar com a agenda externa. Verifique disponibilidade.");
         } finally {
           setIsLoadingGoogle(false);
         }
@@ -127,9 +144,17 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
 
         const isGoogleBusy = googleBusySlots.some(busy => {
           const busyStart = new Date(busy.start);
-          const busyEnd = new Date(busy.end);
+          let busyEnd = new Date(busy.end);
+
+          // Fix for 0-duration events: treat as blocking the start time
+          if (busyStart.getTime() === busyEnd.getTime()) {
+            busyEnd = new Date(busyStart.getTime() + 1);
+          }
+
           const overlaps = (current < busyEnd && nextTime > busyStart);
-          if (overlaps) console.log(`[Wizard] Slot ${timeStr} conflitante com Google:`, busy);
+          if (overlaps) {
+            // console.log(`[Wizard] Slot ${timeStr} conflitante com Google:`, busy);
+          }
           return overlaps;
         });
 
@@ -489,7 +514,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
