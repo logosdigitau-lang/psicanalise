@@ -1,13 +1,29 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Fix: Initialize the client using process.env.API_KEY as the only source for the key.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+let aiClient: GoogleGenAI | null = null;
+
+const getClient = () => {
+  if (aiClient) return aiClient;
+
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    console.warn("Gemini API Key is missing. AI features will be disabled.");
+    return null;
+  }
+
+  aiClient = new GoogleGenAI({ apiKey });
+  return aiClient;
+};
 
 export const getAISupport = async (userQuestion: string) => {
   try {
-    // Fix: Using generateContent with correct model name and prompt contents for a basic text task.
+    const ai = getClient();
+    if (!ai) {
+      return "Desculpe, o serviço de IA está temporariamente indisponível (Chave de API não configurada).";
+    }
+
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-1.5-flash', // Updated to stable model name just in case
       contents: userQuestion,
       config: {
         systemInstruction: `Você é um assistente virtual acolhedor do consultório do Psicanalista Messias Tavares. 
@@ -24,7 +40,6 @@ export const getAISupport = async (userQuestion: string) => {
         temperature: 0.7,
       },
     });
-    // Fix: Access the generated string using the .text property from the GenerateContentResponse.
     return response.text;
   } catch (error) {
     console.error("Gemini Error:", error);
