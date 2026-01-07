@@ -163,6 +163,11 @@ const App: React.FC = () => {
     setAppointments(prev => prev.filter(a => a.id !== id));
   };
 
+  const deletePatient = async (email: string) => {
+    await DataService.deletePatient(email);
+    setAppointments(prev => prev.filter(a => (a.patientEmail || '').toLowerCase() !== email.toLowerCase()));
+  };
+
   const rescheduleAppointment = async (id: string, newDate?: string, newTime?: string) => {
     const apt = appointments.find(a => a.id === id);
     if (apt) {
@@ -322,6 +327,7 @@ const App: React.FC = () => {
               onRemoveBlock={removeBlock}
               onCancelAppointment={cancelAppointment}
               onDeleteAppointment={deleteAppointment}
+              onDeletePatient={deletePatient}
               onRescheduleAppointment={rescheduleAppointment}
               onScheduleFollowUp={scheduleFollowUp}
               onUpdateNotes={updateAppointmentNotes}
