@@ -143,8 +143,6 @@ export class GoogleCalendarService {
   }
 
   static async getBusySlots(date: string, token: string): Promise<GoogleBusySlot[]> {
-
-
     try {
       // Usar horário local para definir início e fim do dia, convertendo para ISO (UTC)
       const startLocal = new Date(`${date}T00:00:00`);
@@ -164,21 +162,25 @@ export class GoogleCalendarService {
         body: JSON.stringify({
           timeMin,
           timeMax,
+          timeZone: 'America/Sao_Paulo', // Forçar timezone
           items: [{ id: 'primary' }]
         })
       });
 
       if (!response.ok) {
-        console.error('[GoogleBusy] Erro na resposta:', await response.json());
-        return [];
+        const errorData = await response.json();
+        console.error('[GoogleBusy] Erro na resposta:', errorData);
+        throw new Error(`Google Calendar API Error: ${JSON.stringify(errorData)}`);
       }
+
       const data = await response.json();
       const busy = data.calendars.primary.busy || [];
       console.log('[GoogleBusy] Slots encontrados:', busy);
       return busy;
     } catch (e) {
       console.error('Erro ao buscar slots ocupados no Google:', e);
-      return [];
+      // Propagate error to let caller know
+      throw e;
     }
   }
 }

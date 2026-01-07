@@ -70,9 +70,16 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
     const fetchGoogleBusy = async () => {
       if (selectedDate && clinicalSettings.integrations.googleCalendarConnected && clinicalSettings.integrations.googleAccessToken) {
         setIsLoadingGoogle(true);
-        const slots = await GoogleCalendarService.getBusySlots(selectedDate, clinicalSettings.integrations.googleAccessToken);
-        setGoogleBusySlots(slots);
-        setIsLoadingGoogle(false);
+        try {
+          const slots = await GoogleCalendarService.getBusySlots(selectedDate, clinicalSettings.integrations.googleAccessToken);
+          setGoogleBusySlots(slots);
+        } catch (error) {
+          console.error("Falha ao sincronizar agenda externa:", error);
+          // Optional: Notify user or just fail silently regarding visual feedback but log it
+          // alert("Aviso: Não foi possível sincronizar com a agenda externa. Verifique disponibilidade.");
+        } finally {
+          setIsLoadingGoogle(false);
+        }
       }
     };
     fetchGoogleBusy();
