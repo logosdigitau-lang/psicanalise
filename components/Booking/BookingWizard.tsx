@@ -90,7 +90,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
               end: ev.end.dateTime
             }));
 
-          setRawEvents(events); // DEBUG: Store raw events
+
           setGoogleBusySlots(busySlots);
         } catch (error) {
           console.error("Falha ao sincronizar agenda externa:", error);
@@ -350,18 +350,7 @@ const BookingWizard: React.FC<BookingWizardProps> = ({
                 </div>
 
                 <div>
-                  <div className="flex flex-col mb-4 bg-yellow-100 p-2 rounded border border-yellow-300">
-                    <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold block">Debug Agenda Google ({selectedDate})</label>
-                    <div className="text-xs font-mono mt-1">
-                      Encontrados (RAW): {rawEvents.length} <br />
-                      Filtrados: {googleBusySlots.length}
-                    </div>
-                    {rawEvents.map((ev, i) => (
-                      <div key={i} className="text-[10px] text-blue-600 mt-1 border-b border-blue-200 pb-1">
-                        RAW #{i + 1}: {JSON.stringify(ev.start)} / Transp: {ev.transparency}
-                      </div>
-                    ))}
-                  </div>
+
                   <div className="grid grid-cols-3 md:grid-cols-2 gap-2 md:gap-4 max-h-[300px] md:max-h-[440px] overflow-y-auto pr-2 custom-scrollbar">
                     {filteredAvailableSlots.map(time => (<button key={time} onClick={() => setSelectedTime(time)} className={`py-3 md:p-6 rounded-xl md:rounded-3xl border text-xs md:text-base font-bold transition-all ${selectedTime === time ? 'bg-slate-900 text-white border-slate-900' : 'bg-white border-slate-100 text-slate-700 active:bg-slate-50'}`}>{time}</button>))}
                     {filteredAvailableSlots.length === 0 && selectedDate && <p className="col-span-full text-center py-12 text-slate-300 italic text-xs">Nenhum horário disponível para esta data.</p>}
